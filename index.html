@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ember &amp; Thyme – Restaurant Management &amp; Billing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f5f6f2;--surface:#fff;--ink:#17221f;--muted:#5d6b66;--line:#d9ded8;--pine:#1f4a40;--pine-ink:#fff;--gold:#e3b73a;--ok:#1d7a4a;--bad:#b3261e;--busy:#fbe9c4;--free:#dcefe4;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1816;--surface:#18241f;--ink:#e8eee9;--muted:#9bada5;--line:#2b3a34;--pine:#5fb59f;--pine-ink:#0b1512;--gold:#e3b73a;--ok:#5fd394;--bad:#ff8a80;--busy:#3a3115;--free:#173a2b}}
+:root[data-theme="dark"]{--bg:#0f1816;--surface:#18241f;--ink:#e8eee9;--muted:#9bada5;--line:#2b3a34;--pine:#5fb59f;--pine-ink:#0b1512;--ok:#5fd394;--bad:#ff8a80;--busy:#3a3115;--free:#173a2b}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 "Bricolage Grotesque",system-ui,sans-serif}
+header{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:center;justify-content:space-between;padding:16px 24px;border-bottom:1px solid var(--line);background:var(--surface)}
+h1{font-size:20px;margin:0;font-weight:700;letter-spacing:-.01em}
+h1 small{display:block;font-weight:400;font-size:13px;color:var(--muted)}
+nav{display:flex;gap:4px;flex-wrap:wrap}
+nav button{border:0;background:none;color:var(--muted);padding:8px 14px;border-radius:8px;font:inherit;cursor:pointer}
+nav button[aria-selected="true"]{background:var(--pine);color:var(--pine-ink);font-weight:500}
+nav button:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+main{max-width:1100px;margin:0 auto;padding:24px}
+h2{font-size:18px;margin:0 0 12px}
+.grid{display:grid;gap:24px;grid-template-columns:1fr 340px}
+@media(max-width:820px){.grid{grid-template-columns:1fr}main{padding:16px}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px}
+.tables{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px;margin-bottom:24px}
+.tbl{border:1px solid var(--line);border-radius:8px;padding:10px;text-align:left;background:var(--free);color:var(--ink);font:inherit;cursor:pointer}
+.tbl.OCCUPIED{background:var(--busy)}
+.tbl[aria-pressed="true"]{outline:2px solid var(--pine);outline-offset:1px}
+.tbl b{display:block}.tbl span{font-size:12px;color:var(--muted)}
+.course{margin:16px 0 4px;font-weight:700;color:var(--pine)}
+.item{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
+.item small{color:var(--muted);display:block}
+.qty{display:flex;align-items:center;gap:8px}
+.qty button,.btn{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:8px;padding:6px 12px;font:inherit;cursor:pointer}
+.btn.primary{background:var(--pine);color:var(--pine-ink);border-color:var(--pine);font-weight:500}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.row{display:flex;justify-content:space-between;gap:12px;padding:4px 0}
+.row.total{border-top:1px solid var(--line);margin-top:6px;padding-top:10px;font-weight:700;font-size:17px}
+.board{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+@media(max-width:820px){.board{grid-template-columns:1fr 1fr}}
+.col{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px;min-height:160px}
+.col h3{margin:0 0 8px;font-size:14px;display:flex;justify-content:space-between}
+.ticket{border:1px solid var(--line);border-left:4px solid var(--gold);border-radius:8px;padding:10px;margin-bottom:8px;background:var(--bg)}
+.ticket ul{margin:6px 0;padding-left:18px}
+label{display:block;font-size:13px;color:var(--muted);margin:10px 0 4px}
+input,select{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);font:inherit}
+.chips{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+.msg{margin:10px 0;padding:8px 12px;border-radius:8px;font-size:14px}
+.msg.err{background:var(--busy);color:var(--bad)}.msg.ok{background:var(--free);color:var(--ok)}
+.empty{color:var(--muted);font-size:14px}
+.step{display:flex;gap:12px;padding:8px 0;border-bottom:1px solid var(--line)}
+.step i{font-style:normal;width:22px;text-align:center;font-weight:700}
+.step.pass i{color:var(--ok)}.step.fail i{color:var(--bad)}.step.wait i{color:var(--muted)}
+.step small{display:block;color:var(--muted)}
+table{border-collapse:collapse;width:100%;font-size:14px}th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line)}
+.scroll{overflow-x:auto}
+</style>
+</head>
+<body>
+<header>
+  <h1>Ember &amp; Thyme<small>L’Aura Cucina &amp; Grill – restaurant management and billing</small></h1>
+  <nav role="tablist" id="nav"></nav>
+</header>
+<main id="view"></main>
+<script>
+"use strict";
+/* ---------- In-browser stand-in for the Spring Boot /api/v1 backend ---------- */
+const rupees=p=>"₹"+(p/100).toLocaleString("en-IN",{minimumFractionDigits:2,maximumFractionDigits:2});
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const pct=(amt,num,den)=>Math.floor((amt*num*2+den)/(den*2)); /* integer HALF_UP */
+const db={
+  menu:[
+    {id:1,course:"Starters",name:"Burrata with roasted tomato",price:42000,diet:"Veg"},
+    {id:2,course:"Starters",name:"Thyme-grilled prawns",price:56000,diet:"Non-veg"},
+    {id:3,course:"Starters",name:"Charred corn soup",price:26000,diet:"Vegan"},
+    {id:4,course:"Mains",name:"Wood-fired margherita",price:48000,diet:"Veg"},
+    {id:5,course:"Mains",name:"Ember-grilled chicken",price:69000,diet:"Non-veg"},
+    {id:6,course:"Mains",name:"Wild mushroom risotto",price:58000,diet:"Veg"},
+    {id:7,course:"Desserts",name:"Tiramisu",price:32000,diet:"Veg"},
+    {id:8,course:"Desserts",name:"Salted caramel panna cotta",price:34000,diet:"Veg"},
+    {id:9,course:"Drinks",name:"Fresh lime soda",price:12000,diet:"Vegan"},
+    {id:10,course:"Drinks",name:"Cold brew",price:18000,diet:"Vegan"}],
+  tables:[1,2,3,4,5,6].map(n=>({number:n,status:"AVAILABLE"})),
+  orders:[],invoices:[],promos:{WELCOME10:10,AURA20:20},nextOrder:1,seq:1001
+};
+const FLOW=["RECEIVED","PREPARING","READY","SERVED"];
+const api={
+  async health(){return{status:"UP",cors:"http://localhost:5173"}},
+  async getMenu(){return db.menu},
+  async getTables(){return db.tables.map(t=>({...t}))},
+  async getKitchen(){return db.orders.filter(o=>o.status!=="PAID")},
+  async getInvoices(){return db.invoices},
+  async placeOrder(tableNumber,items){
+    const t=db.tables.find(x=>x.number===tableNumber);
+    if(!t)throw new Error("Table not found");
+    if(t.status!=="AVAILABLE")throw new Error("Table "+tableNumber+" is already occupied");
+    if(!items.length)throw new Error("Add at least one item");
+    const lines=items.map(i=>{const m=db.menu.find(x=>x.id===i.menuItemId);return{name:m.name,price:m.price,quantity:i.quantity}});
+    const o={id:db.nextOrder++,code:"ORD-"+String(db.nextOrder-1).padStart(4,"0"),tableNumber,items:lines,
+      subtotal:lines.reduce((s,l)=>s+l.price*l.quantity,0),status:"RECEIVED"};
+    t.status="OCCUPIED";db.orders.push(o);return o;
+  },
+  async advanceKds(id,next){
+    const o=db.orders.find(x=>x.id===id);if(!o)throw new Error("Order not found");
+    if(FLOW.indexOf(next)!==FLOW.indexOf(o.status)+1)throw new Error("Invalid transition "+o.status+" → "+next);
+    o.status=next;return o;
+  },
+  quote({subtotal,promoCode,tipAmount,splitCount}){
+    let rate=0;const code=(promoCode||"").trim().toUpperCase();
+    if(code){if(!(code in db.promos))throw new Error("Invalid or expired promo code");rate=db.promos[code]}
+    const discount=pct(subtotal,rate,100),net=subtotal-discount,gst=pct(net,5,100);
+    const tip=tipAmount||0,final=net+gst+tip,n=Math.max(1,splitCount|0);
+    return{subtotal,discount,net,gst,tip,final,split:n,perGuest:pct(final,1,n)};
+  },
+  async settle({orderId,promoCode,tipAmount,splitCount,paymentMethod}){
+    const o=db.orders.find(x=>x.id===orderId);if(!o)throw new Error("Order not found: "+orderId);
+    if(o.status!=="SERVED")throw new Error("Order must be SERVED before billing (now "+o.status+")");
+    const q=api.quote({subtotal:o.subtotal,promoCode,tipAmount,splitCount});
+    const inv={invoiceNumber:"INV-2026-"+String(db.seq++).padStart(4,"0"),orderCode:o.code,tableNumber:o.tableNumber,paymentMethod,...q};
+    db.invoices.unshift(inv);o.status="PAID";
+    db.tables.find(t=>t.number===o.tableNumber).status="AVAILABLE";
+    return inv;
+  }
+};
+
+/* ---------- UI ---------- */
+const tabs=[["floor","Floor & order"],["kitchen","Kitchen display"],["billing","Billing"],["e2e","E2E test suite"]];
+let tab="floor",selTable=null,cart={},billOrder=null,promo="",tip=0,split=1,pay="UPI",notice=null,lastInvoice=null,e2eRows=[];
+const view=document.getElementById("view");
+function drawNav(){
+  const nav=document.getElementById("nav");
+  nav.innerHTML=tabs.map(([k,l])=>`<button role="tab" aria-selected="${k===tab}" data-t="${k}">${l}</button>`).join("");
+  nav.querySelectorAll("button").forEach(b=>b.onclick=()=>{tab=b.dataset.t;notice=null;render()});
+}
+const flash=(t,m)=>{notice={t,m}};
+const noticeHtml=()=>notice?`<div class="msg ${notice.t}" role="status">${esc(notice.m)}</div>`:"";
+async function render(){drawNav();({floor:vFloor,kitchen:vKitchen,billing:vBilling,e2e:vE2E})[tab]()}
+
+async function vFloor(){
+  const [menu,tables]=await Promise.all([api.getMenu(),api.getTables()]);
+  const courses=[...new Set(menu.map(m=>m.course))];
+  const lines=Object.entries(cart).filter(([,q])=>q>0).map(([id,q])=>({m:menu.find(x=>x.id==id),q}));
+  const sub=lines.reduce((s,l)=>s+l.m.price*l.q,0);
+  view.innerHTML=`<h2>Dining floor</h2>
+  <div class="tables">${tables.map(t=>`<button class="tbl ${t.status}" data-n="${t.number}" aria-pressed="${selTable===t.number}"><b>Table ${String(t.number).padStart(2,"0")}</b><span>${t.status==="AVAILABLE"?"Available":"Occupied"}</span></button>`).join("")}</div>
+  <div class="grid"><section class="panel"><h2>Menu</h2>${courses.map(c=>`<div class="course">${c}</div>`+menu.filter(m=>m.course===c).map(m=>`<div class="item"><div>${m.name}<small>${m.diet} · ${rupees(m.price)}</small></div><div class="qty"><button data-d="-1" data-id="${m.id}" aria-label="Remove ${m.name}">−</button><span>${cart[m.id]||0}</span><button data-d="1" data-id="${m.id}" aria-label="Add ${m.name}">+</button></div></div>`).join("")).join("")}</section>
+  <aside class="panel"><h2>${selTable?"Order for Table "+String(selTable).padStart(2,"0"):"Choose a table"}</h2>${noticeHtml()}
+  ${lines.length?lines.map(l=>`<div class="row"><span>${l.q} × ${l.m.name}</span><span>${rupees(l.m.price*l.q)}</span></div>`).join("")+`<div class="row total"><span>Subtotal</span><span>${rupees(sub)}</span></div>`:`<p class="empty">Add dishes from the menu to start an order.</p>`}
+  <button class="btn primary" id="place" style="width:100%;margin-top:12px" ${selTable&&lines.length?"":"disabled"}>Send to kitchen</button></aside></div>`;
+  view.querySelectorAll(".tbl").forEach(b=>b.onclick=()=>{selTable=+b.dataset.n;notice=null;vFloor()});
+  view.querySelectorAll(".qty button").forEach(b=>b.onclick=()=>{const id=b.dataset.id;cart[id]=Math.max(0,(cart[id]||0)+ +b.dataset.d);vFloor()});
+  view.querySelector("#place").onclick=async()=>{
+    try{const o=await api.placeOrder(selTable,lines.map(l=>({menuItemId:l.m.id,quantity:l.q})));
+      flash("ok",o.code+" sent to the kitchen for Table "+String(selTable).padStart(2,"0"));cart={};selTable=null}
+    catch(e){flash("err",e.message)}vFloor()};
+}
+
+async function vKitchen(){
+  const orders=await api.getKitchen();
+  view.innerHTML=`<h2>Kitchen display</h2>${noticeHtml()}<div class="board">${FLOW.map((s,i)=>{
+    const list=orders.filter(o=>o.status===s);
+    return`<section class="col"><h3>${s[0]+s.slice(1).toLowerCase()}<span>${list.length}</span></h3>${list.length?list.map(o=>`<div class="ticket"><b>${o.code}</b> · Table ${String(o.tableNumber).padStart(2,"0")}<ul>${o.items.map(l=>`<li>${l.quantity} × ${esc(l.name)}</li>`).join("")}</ul>${i<3?`<button class="btn primary" data-id="${o.id}" data-next="${FLOW[i+1]}">Mark ${FLOW[i+1].toLowerCase()}</button>`:`<small>Ready to bill</small>`}</div>`).join(""):`<p class="empty">No tickets</p>`}</section>`}).join("")}</div>`;
+  view.querySelectorAll("button[data-next]").forEach(b=>b.onclick=async()=>{
+    try{await api.advanceKds(+b.dataset.id,b.dataset.next);notice=null}catch(e){flash("err",e.message)}vKitchen()});
+}
+
+async function vBilling(){
+  const orders=(await api.getKitchen()).filter(o=>o.status==="SERVED");
+  if(!orders.find(o=>o.id===billOrder))billOrder=orders[0]?.id??null;
+  const o=orders.find(x=>x.id===billOrder);let q=null,qerr=null;
+  if(o)try{q=api.quote({subtotal:o.subtotal,promoCode:promo,tipAmount:tip,splitCount:split})}catch(e){qerr=e.message}
+  const invs=await api.getInvoices();
+  view.innerHTML=`<div class="grid"><section class="panel"><h2>Settle bill</h2>${noticeHtml()}
+  ${orders.length?`<label for="ord">Served order</label><select id="ord">${orders.map(x=>`<option value="${x.id}" ${x.id===billOrder?"selected":""}>${x.code} – Table ${String(x.tableNumber).padStart(2,"0")} – ${rupees(x.subtotal)}</option>`).join("")}</select>
+  <label for="promo">Promo code (WELCOME10 or AURA20)</label><input id="promo" value="${esc(promo)}" autocomplete="off">
+  <label for="tip">Tip in rupees</label><input id="tip" type="number" min="0" step="1" value="${tip/100}">
+  <div class="chips">${[0,5,10].map(p=>`<button class="btn" data-tp="${p}">${p===0?"No tip":p+"% tip"}</button>`).join("")}</div>
+  <label for="split">Split between guests</label><input id="split" type="number" min="1" max="20" value="${split}">
+  <label for="pay">Payment method</label><select id="pay">${["UPI","CARD","CASH"].map(m=>`<option ${m===pay?"selected":""}>${m}</option>`).join("")}</select>`
+  :`<p class="empty">No served orders yet. Move a ticket to Served in the Kitchen display, then come back to bill it.</p>`}</section>
+  <aside class="panel"><h2>Bill preview</h2>${qerr?`<div class="msg err">${esc(qerr)}</div>`:""}
+  ${q?`<div class="row"><span>Subtotal</span><span>${rupees(q.subtotal)}</span></div><div class="row"><span>Promo discount</span><span>−${rupees(q.discount)}</span></div><div class="row"><span>GST (5%)</span><span>${rupees(q.gst)}</span></div><div class="row"><span>Tip</span><span>${rupees(q.tip)}</span></div><div class="row total"><span>Final payable</span><span>${rupees(q.final)}</span></div><div class="row"><span>Per guest (${q.split})</span><span>${rupees(q.perGuest)}</span></div>
+  <button class="btn primary" id="settle" style="width:100%;margin-top:12px" ${qerr?"disabled":""}>Settle and release table</button>`:`<p class="empty">Select a served order to preview its bill.</p>`}</aside></div>
+  ${lastInvoice?`<section class="panel" style="margin-top:24px"><h2>Tax invoice ${lastInvoice.invoiceNumber}</h2><p>${lastInvoice.orderCode} · Table ${String(lastInvoice.tableNumber).padStart(2,"0")} · paid by ${lastInvoice.paymentMethod} · ${rupees(lastInvoice.final)} total, ${rupees(lastInvoice.perGuest)} each for ${lastInvoice.split} guest(s). Table is available again.</p></section>`:""}
+  <section class="panel" style="margin-top:24px"><h2>Invoices</h2>${invs.length?`<div class="scroll"><table><tr><th>Invoice</th><th>Order</th><th>Table</th><th>Method</th><th>Total</th></tr>${invs.map(i=>`<tr><td>${i.invoiceNumber}</td><td>${i.orderCode}</td><td>${i.tableNumber}</td><td>${i.paymentMethod}</td><td>${rupees(i.final)}</td></tr>`).join("")}</table></div>`:`<p class="empty">Invoices appear here after a bill is settled.</p>`}</section>`;
+  if(!o)return;
+  const re=()=>vBilling();
+  view.querySelector("#ord").onchange=e=>{billOrder=+e.target.value;re()};
+  view.querySelector("#promo").onchange=e=>{promo=e.target.value;re()};
+  view.querySelector("#tip").onchange=e=>{tip=Math.max(0,Math.round(+e.target.value*100)||0);re()};
+  view.querySelector("#split").onchange=e=>{split=Math.min(20,Math.max(1,Math.floor(+e.target.value)||1));re()};
+  view.querySelector("#pay").onchange=e=>{pay=e.target.value};
+  view.querySelectorAll("[data-tp]").forEach(b=>b.onclick=()=>{try{tip=pct(api.quote({subtotal:o.subtotal,promoCode:promo,tipAmount:0,splitCount:1}).net,+b.dataset.tp,100)}catch(e){tip=0}re()});
+  const s=view.querySelector("#settle");
+  if(s)s.onclick=async()=>{try{lastInvoice=await api.settle({orderId:o.id,promoCode:promo,tipAmount:tip,splitCount:split,paymentMethod:pay});promo="";tip=0;split=1;notice=null}catch(e){flash("err",e.message)}re()};
+}
+
+const E2E=["Health and CORS preflight","Table 04 starts AVAILABLE","Load menu catalog","Place multi-item order","Table 04 becomes OCCUPIED","KDS advance to PREPARING","KDS advance to READY","KDS advance to SERVED","Settle with AURA20, 10% tip, 2-way split","Invoice INV-2026-XXXX persisted","Table 04 resets to AVAILABLE"];
+async function vE2E(){
+  view.innerHTML=`<div class="panel"><h2>11-step end-to-end verification</h2><p class="empty">Runs the full lifecycle on Table 04: menu, order, kitchen, promo billing, invoice and table reset. Figures are checked against an independent calculation.</p><button class="btn primary" id="run">Run all 11 steps</button><div id="steps" style="margin-top:12px"></div></div>`;
+  const draw=()=>view.querySelector("#steps").innerHTML=E2E.map((n,i)=>{const r=e2eRows[i]||{s:"wait",d:""};return`<div class="step ${r.s}"><i>${r.s==="pass"?"✓":r.s==="fail"?"✗":"·"}</i><div>${i+1}. ${n}<small>${esc(r.d)}</small></div></div>`}).join("");
+  if(!e2eRows.length)e2eRows=[];draw();
+  view.querySelector("#run").onclick=async function(){
+    this.disabled=true;e2eRows=[];draw();let order,inv,menu;
+    const steps=[
+      async()=>{const h=await api.health();if(h.status!=="UP")throw 0;return"status UP, origin "+h.cors},
+      async()=>{const t=(await api.getTables()).find(x=>x.number===4);if(t.status!=="AVAILABLE")throw new Error("Table 04 is "+t.status);return"AVAILABLE"},
+      async()=>{menu=await api.getMenu();return menu.length+" dishes in "+new Set(menu.map(m=>m.course)).size+" courses"},
+      async()=>{order=await api.placeOrder(4,[{menuItemId:5,quantity:2},{menuItemId:7,quantity:1}]);return order.code+", subtotal "+rupees(order.subtotal)},
+      async()=>{const t=(await api.getTables()).find(x=>x.number===4);if(t.status!=="OCCUPIED")throw new Error("Got "+t.status);return"OCCUPIED"},
+      ...["PREPARING","READY","SERVED"].map(s=>async()=>{await api.advanceKds(order.id,s);return"Ticket is "+s}),
+      async()=>{const tip=pct(order.subtotal-pct(order.subtotal,20,100),10,100);inv=await api.settle({orderId:order.id,promoCode:"AURA20",tipAmount:tip,splitCount:2,paymentMethod:"UPI"});
+        const net=order.subtotal*0.8,exp=Math.round(net*1.05+net*0.1);
+        if(Math.abs(inv.final-exp)>1)throw new Error("Expected "+rupees(exp)+", got "+rupees(inv.final));
+        return"final "+rupees(inv.final)+", "+rupees(inv.perGuest)+" per guest"},
+      async()=>{const l=await api.getInvoices();if(!l.some(i=>i.invoiceNumber===inv.invoiceNumber))throw new Error("Not found");return inv.invoiceNumber+" stored"},
+      async()=>{const t=(await api.getTables()).find(x=>x.number===4);if(t.status!=="AVAILABLE")throw new Error("Got "+t.status);return"AVAILABLE"}
+    ];
+    for(let i=0;i<steps.length;i++){
+      try{e2eRows[i]={s:"pass",d:await steps[i]()}}catch(e){e2eRows[i]={s:"fail",d:e&&e.message||"Check failed"};draw();break}
+      draw();await new Promise(r=>setTimeout(r,180));
+    }
+    const p=e2eRows.filter(r=>r.s==="pass").length;
+    view.querySelector("#steps").insertAdjacentHTML("beforeend",`<div class="msg ${p===11?"ok":"err"}" role="status">${p} of 11 steps passed</div>`);
+    this.disabled=false;
+  };
+}
+render();
+</script>
+</body>
+</html>
